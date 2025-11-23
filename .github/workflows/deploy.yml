@@ -64,7 +64,7 @@ jobs:
         working-directory: ${{ inputs.working-directory }}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
       - uses: ./.github/actions/setup-pnpm
         with:
           install-dependencies: true
@@ -81,7 +81,7 @@ jobs:
         working-directory: ${{ inputs.working-directory }}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
       - uses: ./.github/actions/setup-pnpm
         with:
           install-dependencies: true
@@ -113,7 +113,7 @@ jobs:
     steps:
       # Checkout repository
       - name: Checkout repository
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       # Setup, and download artifact
       - uses: ./.github/actions/pre-deploy
@@ -195,7 +195,7 @@ jobs:
     steps:
       # Checkout repository
       - name: Checkout repository
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       # Setup, and download artifact
       - uses: ./.github/actions/pre-deploy
