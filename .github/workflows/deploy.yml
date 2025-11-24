@@ -153,6 +153,21 @@ jobs:
 
           echo "preview-url=$PREVIEW_URL" >> $GITHUB_OUTPUT
 
+      # Create deployment summary
+      - name: Create deployment summary
+        if: always()
+        run: |
+          echo "## 🎭 Staging Deployment" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Parameter | Value |" >> $GITHUB_STEP_SUMMARY
+          echo "|-----------|-------|" >> $GITHUB_STEP_SUMMARY
+          echo "| **Status** | ${{ steps.get-deployment-url.outcome == 'success' && '✅ Success' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Commit** | \`${{ github.event.pull_request.head.sha }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Branch** | \`${{ github.ref_name }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| **PR** | [#${{ github.event.pull_request.number }}](${{ github.event.pull_request.html_url }}) |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Deployed by** | @${{ github.actor }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Preview URL** | ${{ steps.get-deployment-url.outcome == 'success' && steps.get-deployment-url.outputs.preview-url || 'Not available' }} |" >> $GITHUB_STEP_SUMMARY
+
       # Comment on the pull request with success status
       - name: Comment successful deployment URL
         if: ${{ steps.get-deployment-url.outcome == 'success' }}
@@ -161,7 +176,7 @@ jobs:
           message: |
             ## 🎉 Deployed to Cloudflare!
 
-            - Commit: `${{ github.sha }}`
+            - Commit: `${{ github.event.pull_request.head.sha }}`
             - Preview URL: ${{ steps.get-deployment-url.outputs.preview-url }}
 
       # Comment on the pull request with failure status
@@ -172,7 +187,7 @@ jobs:
           message: |
             ## ❌ Deployment to Cloudflare failed!
 
-            - Commit: `${{ github.sha }}`
+            - Commit: `${{ github.event.pull_request.head.sha }}`
             - Please check the [workflow logs](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}) for more details.
 
       # Fail the workflow if deployment failed
@@ -203,11 +218,55 @@ jobs:
           artifact-name: ${{ inputs.artifact-name }}
           unpack-path: ${{ inputs.working-directory == '.' && inputs.artifact-path || format('{0}/{1}', inputs.working-directory, inputs.artifact-path) }}
 
+      # Set wrangler log file path for capturing output
+      - name: Set wrangler output file path
+        id: set-wrangler-log
+        run: |
+          WRANGLER_LOG=/tmp/wrangler-$(date '+%s%N').log
+          echo "wrangler-log=$WRANGLER_LOG" >> $GITHUB_OUTPUT
+
       # Deploy to Cloudflare Workers
       - name: Deploy to production
         id: deploy-production
+        continue-on-error: true
         env:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.cloudflare-account-id }}
           CLOUDFLARE_API_TOKEN: ${{ secrets.cloudflare-api-token }}
         run: |
+          export WRANGLER_OUTPUT_FILE_PATH=${{ steps.set-wrangler-log.outputs.wrangler-log }}
           pnpm run ${{ inputs.deploy-production-command }}
+
+      # Extract deployment URL from wrangler log
+      - name: Get deployment URL
+        id: get-deployment-url
+        continue-on-error: true
+        run: |
+          PRODUCTION_URL=$(jq --raw-output --slurp 'first(.[] | select(.url) | .url)' ${{ steps.set-wrangler-log.outputs.wrangler-log }})
+
+          if [ -z "$PRODUCTION_URL" ]; then
+            echo "Warning: No production URL found in wrangler log"
+            PRODUCTION_URL="Not available"
+          fi
+
+          echo "production-url=$PRODUCTION_URL" >> $GITHUB_OUTPUT
+
+      # Create deployment summary
+      - name: Create deployment summary
+        if: always()
+        run: |
+          echo "## 🚀 Production Deployment" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Parameter | Value |" >> $GITHUB_STEP_SUMMARY
+          echo "|-----------|-------|" >> $GITHUB_STEP_SUMMARY
+          echo "| **Status** | ${{ steps.deploy-production.outcome == 'success' && '✅ Success' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Commit** | \`${{ github.sha }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Branch** | \`${{ github.ref_name }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Deployed by** | @${{ github.actor }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| **URL** | ${{ steps.get-deployment-url.outputs.production-url != 'Not available' && steps.get-deployment-url.outputs.production-url || 'Not available' }} |" >> $GITHUB_STEP_SUMMARY
+
+      # Fail the workflow if deployment failed
+      - name: Fail workflow if deployment failed
+        if: ${{ steps.deploy-production.outcome == 'failure' }}
+        run: |
+          echo "Deployment to production failed."
+          exit 1
