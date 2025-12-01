@@ -1,4 +1,4 @@
-# .github 🔧
+# automations 🔧
 
 Reusable GitHub Actions and workflows for my projects 💪😎
 
@@ -56,7 +56,7 @@ on:
 
 jobs:
   deploy:
-    uses: Perdolique/.github/.github/workflows/deploy.yml@master
+    uses: Perdolique/automations/.github/workflows/deploy.yml@v1.0.0
     with:
       working-directory: '.'
       artifact-path: '.output'
@@ -83,7 +83,7 @@ Sets up pnpm and Node.js environment 📦
 **Example:**
 
 ```yaml
-- uses: Perdolique/.github/.github/actions/setup-pnpm@master
+- uses: Perdolique/automations/.github/actions/setup-pnpm@v1.0.0
   with:
     install-dependencies: true
 ```
@@ -100,7 +100,7 @@ Prepares deployment artifact 📥
 **Example:**
 
 ```yaml
-- uses: Perdolique/.github/.github/actions/pre-deploy@master
+- uses: Perdolique/automations/.github/actions/pre-deploy@v1.0.0
   with:
     artifact-name: 'deployment-artifact'
     unpack-path: '.output'
