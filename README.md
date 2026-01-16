@@ -33,6 +33,14 @@ Reusable workflow for building and deploying projects to Cloudflare Workers 🌬
 - `cloudflare-account-id` - Cloudflare account ID (required)
 - `cloudflare-api-token` - Cloudflare API token (required)
 
+**Setup:**
+
+1. Create a workflow file `.github/workflows/deploy.yml` in your repository
+2. Generate a Cloudflare API token with proper permissions (you can use the "Edit Cloudflare Workers" template)
+3. Add the token as `CLOUDFLARE_API_TOKEN` secret in your repository settings
+4. Add your Cloudflare account ID as `CLOUDFLARE_ACCOUNT_ID` secret
+5. Create a `.node-version` file in the root of your repository with the Node.js version (e.g., `24.13.0`)
+
 **Usage:**
 
 ```yaml
