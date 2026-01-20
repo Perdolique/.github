@@ -64,7 +64,7 @@ on:
 
 jobs:
   deploy:
-    uses: Perdolique/automations/.github/workflows/deploy.yml@v1.0.2
+    uses: Perdolique/automations/.github/workflows/deploy.yml@v1.0.4
     with:
       working-directory: '.'
       artifact-path: '.output'
@@ -91,7 +91,7 @@ Sets up pnpm and Node.js environment 📦
 **Example:**
 
 ```yaml
-- uses: Perdolique/automations/.github/actions/setup-pnpm@v1.0.2
+- uses: Perdolique/automations/.github/actions/setup-pnpm@v1.0.4
   with:
     install-dependencies: true
 ```
@@ -108,7 +108,7 @@ Prepares deployment artifact 📥
 **Example:**
 
 ```yaml
-- uses: Perdolique/automations/.github/actions/pre-deploy@v1.0.2
+- uses: Perdolique/automations/.github/actions/pre-deploy@v1.0.4
   with:
     artifact-name: 'deployment-artifact'
     unpack-path: '.output'
@@ -118,6 +118,14 @@ Prepares deployment artifact 📥
 
 Configured to auto-update GitHub Actions every Monday at 18:00 (Tallinn time) 🕐
 
+### Dependabot Secrets 🔑
+
+For Dependabot PRs to trigger deployment workflows, you need to add secrets for Dependabot specifically. It has its own secret storage! 🤫
+
+Make sure to add `CLOUDFLARE_API_TOKEN` to your repository's Dependabot secrets. Otherwise, deployment workflows on Dependabot PRs will fail! 💥
+
+Check out the [GitHub docs on configuring Dependabot secrets](https://docs.github.com/en/code-security/how-tos/secure-your-supply-chain/manage-your-dependency-security/configuring-access-to-private-registries-for-dependabot#storing-credentials-for-dependabot-to-use) for the full guide 📚
+
 ## License 📄
 
-Do whatever you want) I don't care 🤷
+Do whatever you want, I don't care 🤷
